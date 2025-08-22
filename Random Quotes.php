@@ -9,14 +9,17 @@
 
 
 
-// Array of quotes
-$quotes = array(
-    "The only limit to our realization of tomorrow is our doubts of today.",
-    "The future belongs to those who believe in the beauty of their dreams.",
-    "Do not wait to strike till the iron is hot, but make it hot by striking.",
-    "Success usually comes to those who are too busy to be looking for it.",
-    "You miss 100% of the shots you don’t take."
-);
+register_activation_hook(__FILE__, 'random_quotes_install');
+function random_quotes_install() {
+    $default_quotes = array(
+        "The only limit to our realization of tomorrow is our doubts of today.",
+        "The future belongs to those who believe in the beauty of their dreams.",
+        "Do not wait to strike till the iron is hot, but make it hot by striking.",
+        "Success usually comes to those who are too busy to be looking for it.",
+        "You miss 100% of the shots you don’t take."
+    );
+    update_option('random_quotes', $default_quotes);
+}
 
 
 // Display random quote admin page
@@ -25,17 +28,19 @@ function random_quotes_page()
 ?>
     <div class="wrap">
         <h1>View All Quotes</h1>
-        <table border="1" cellpadding="10" cellspacing="0">
+        <table border="1" cellpadding="10" cellspacing="0" width="100%">
             <tr>
                 <th>Sr.</th>
                 <th>Quote</th>
             </tr>
             <tr>
                 <?php
-                for ($i = 0; $i < count($GLOBALS['quotes']); $i++) {
+                // Loop through the quotes stored in the database
+                $quotes = get_option('random_quotes', []);
+                for ($i = 0; $i < count($quotes); $i++) {
                     echo '<tr>';
                     echo '<td>' . ($i + 1) . '</td>';
-                    echo '<td>' . $GLOBALS['quotes'][$i] . '</td>';
+                    echo '<td>' . $quotes[$i] . '</td>';
                     echo '</tr>';
                 }
                 ?>
@@ -56,8 +61,10 @@ function add_new_quote_page()
     </form>
     <?php
     if (isset($_POST['new_quote'])) {
-        $new_quote = $_POST['new_quote'];
-        $GLOBALS['quotes'][] = $new_quote; // Add new quote to the global quotes array
+        $new_quote = $_POST['new_quote']; // Get the new quote from the form
+        $existing_quotes = get_option('random_quotes', []); // Retrieve existing quotes
+        $existing_quotes[] = $new_quote;
+        update_option('random_quotes', $existing_quotes); // Save the new quote in the database
         echo '<div class="updated"><p>Quote added successfully!</p></div>';
     }
 }
@@ -94,7 +101,8 @@ function random_quotes_display()
 add_filter('the_content', 'random_quotes_on_post');
 function random_quotes_on_post()
 {
-    $random_quote = $GLOBALS['quotes'][(rand(0, 4))];
+    $quotes = get_option('random_quotes', []);
+    $random_quote = $quotes[(rand(0, count($quotes) - 1))];
     return '<blockquote>' . $random_quote . '</blockquote>';
 }
 ?>
