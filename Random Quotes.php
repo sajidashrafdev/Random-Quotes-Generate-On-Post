@@ -99,10 +99,14 @@ function random_quotes_display()
 
 // Display random quote on post content
 add_filter('the_content', 'random_quotes_on_post');
-function random_quotes_on_post()
+function random_quotes_on_post($content)
 {
-    $quotes = get_option('random_quotes', []);
-    $random_quote = $quotes[(rand(0, count($quotes) - 1))];
-    return '<blockquote>' . $random_quote . '</blockquote>';
+	// check if the post then show the quotes only!
+	if(is_singular('post')){
+		$quotes = get_option('random_quotes', []);
+  		$random_quote = $quotes[(rand(0, count($quotes) - 1))];
+		$content .= '<blockquote>' . $random_quote . '</blockquote>';
+	}
+    return $content;
 }
 ?>
